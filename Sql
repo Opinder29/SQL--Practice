@@ -1,0 +1,274 @@
+CREATE TABLE customers (            
+  customer_id INTEGER PRIMARY KEY,
+  name TEXT,
+  city TEXT,
+  age INTEGER
+  );
+  
+  
+  INSERT INTO customers VALUES
+(1, 'John', 'Toronto', 32),
+(2, 'Sarah', 'Vancouver', 28),
+(3, 'Mike', 'Toronto', 40),
+(4, 'Emma', 'Montreal', 35),
+(5, 'David', 'Calgary', 29);
+
+
+Select *
+From customers;
+
+
+SELECT name, city 
+FROM customers
+
+
+SELECT *
+FROM customers
+WHERE city = 'Toronto';
+
+
+Select *
+from customers 
+order by age DESC;
+
+
+select AVG(age)
+from customers;
+
+
+select city, count(*)
+from customers
+GROUP BY city;
+
+
+Create table accounts(
+  account_id INTGER PRIMARY KEY,
+  customer_id INTEGER,
+  balance INTEGER
+  );
+  
+  
+  insert into accounts values
+  (101, 1, 5000),
+  (102, 2, 7000),
+  (103, 3, 2000),
+  (104, 1, 3000),
+  (105, 4, 9000);
+  
+  
+  select * 
+  from accounts;
+  
+  select customers.name, accounts.balance 
+  from customers
+  join accounts
+  on customers.customer_id = accounts.customer_id;
+  
+  
+  select name,city
+  from customers
+  where city = 'Toronto';
+  
+  select customers.name, accounts.balance
+  from customers
+  join accounts
+  on customers.customer_id = accounts.customer_id;
+  
+  select balance
+  from accounts
+  order by balance DESC
+  limit 1;
+  
+  
+ --Total balance per customer
+ select customer_id ,SUM(balance)
+ from accounts
+ group by customer_id;
+ 
+ --Customers With Total Balance
+ SELECT customers.name,accounts.balance
+ from customers
+ join accounts
+ on customers.customer_id = accounts.customer_id
+ group by customers.name;
+ 
+ --Customers With Balance Greater Than 5000
+ SELECT customers.name,accounts.balance
+ from customers
+ join accounts
+ on customers.customer_id = accounts.customer_id
+where balance> 5000;
+
+--Customer With Highest Total Balance
+ SELECT customers.name,accounts.balance AS total_balance 
+ from customers
+ join accounts
+ on customers.customer_id = accounts.customer_id
+ group by customers.name
+ order by total_balance DESC
+ limit  1;
+ 
+ 
+ --Customers Without Accounts
+ select customers.name
+ from customers
+ left join accounts
+ on customers.customer_id = accounts.customer_id
+ where accounts.account_id is NULL;
+ 
+ --Find accounts with balance above average
+ select balance
+ from accounts
+ where balance > (
+ select AVG(balance)
+  from accounts) ;
+ 
+ --CASE Statement
+SELECT name,
+CASE
+    WHEN age >= 35 THEN 'Senior Customer'
+    ELSE 'Young Customer'
+END AS category
+FROM customers;
+
+
+--Ranks Customer by Balance
+select customer_id, balance
+from (
+select customer_id,balance,
+RANK() OVER (order by balance DESC ) AS  Balance_Ranking
+from accounts ) 
+  where Balance_Ranking = 2;
+
+
+--top 3 customers with the highest total transaction amount
+select customer_id, SUM(balance) as Total_transactions
+from accounts
+group by customer_id 
+order by Total_transactions DESC 
+limit 3;
+
+
+-- Use of OFFSET
+select name,balance
+from customers
+join accounts
+on customers.customer_id = accounts.customer_id
+WHERE balance < (
+    SELECT MAX(balance)
+    FROM accounts
+)
+ORDER BY balance DESC
+LIMIT 1 offset 1;
+
+
+--another query 
+select MAX(balance)
+from accounts
+  where balance < (
+  select MAX(balance)
+  from accounts
+        );
+--Dense rank 
+select customer_id,balance,
+DENSE_RANK() OVER (ORDER by balance desc )
+from accounts
+limit 2;
+
+--Third highest balance
+select customer_id, balance
+from accounts
+order by balance desc
+limit 1 offset 2;
+
+--Customer with highest balance
+select name,balance
+from customers
+join accounts 
+on customers.customer_id = accounts.customer_id
+order by balance desc 
+limit 1;
+
+--Total balance per customer sorted highest first
+select customers.name, accounts.balance
+from customers
+join accounts
+on customers.customer_id = accounts.customer_id
+order by accounts.balance desc;
+
+
+-- Find duplicates
+select city , count(*)
+from customers 
+group by city 
+having count(*)>1;
+
+--Find duplicate names
+select name, count(*)
+from customers 
+group by name
+HAVING COUNT(*) > 1;
+
+INSERT INTO customers VALUES
+(6, 'John', 'Ottawa', 30);
+
+
+--To get the names without account
+select customers.name
+from customers 
+left join accounts
+on customers.customer_id = accounts.customer_id
+where accounts.account_id is null;
+
+
+--In short form 
+SELECT c.name
+FROM customers c
+LEFT JOIN accounts a
+ON c.customer_id = a.customer_id
+WHERE a.account_id IS NULL;
+
+
+--Rank accounts by balance by using ROW_NUMBER
+SELECT customer_id, balance,
+ROW_NUMBER() OVER (ORDER BY balance DESC) as row_number
+FROM accounts;
+
+
+--Find 3 top balances
+select customer_id, balance
+from accounts
+order by balance desc 
+limit 3;
+
+--Largest transaction per customer
+select *
+from(
+select customer_id,balance,
+ROW_NUMBER() OVER (PARTITION by customer_id order by balance desc) rn
+from accounts)
+where rn =1;
+
+
+--Customer with no account
+select customers.name, accounts.customer_id
+from customers
+left join accounts
+on customers.customer_id = accounts.customer_id
+where accounts.account_id is NULL;
+
+
+--Second highest balance per customer
+select *
+from (
+    select customer_id,balance,
+    		ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY balance desc) as rn 
+    from accounts )
+    where rn = 2 ;
+    
+--Second highest balance
+select MAX(balance)
+from accounts
+	where balance<(
+      	select MAX(balance)
+from accounts);
