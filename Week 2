@@ -1,0 +1,108 @@
+-- Create Customer table
+CREATE TABLE Customer(
+    Customer_id INTEGER PRIMARY KEY,
+    Name TEXT noT NULL,
+  	Email TEXT UNIQUE,
+    City TEXT
+);
+
+
+create table Products(
+  Product_id INT PRIMARY KEY ,
+  Product_name TEXT NOT NULL,
+  Price INT check (Price >0));
+  
+
+CREATE TABLE Orders(
+  Order_id INT Primary key ,
+  Customer_id INT ,
+  Order_date DATE DEFAULT CURRENT_DATE,
+  FOREIGN KEY (Customer_id) REFERENCES Customer(Customer_id));
+  
+
+create table Order_Items(
+  Product_id INT,
+  Order_id INT,
+  Quantity Int,
+  PRIMARY KEY( Product_id,Order_id),
+  FOREIGN KEY(Order_id) REFERENCES Orders(Order_id),
+  Foreign key (Product_id) REFERENCES Products(Product_id));
+
+  INSERT INTO Customer VALUES
+(1,'amrit@gmail.com','Amrit','Brampton'),
+(2,'annu@gmail.com','Annu','Toronto');
+
+ INSERT INTO Products VALUES
+(101,'Laptop',1000),
+(102,'Phone',500);
+
+INSERT INTO Orders VALUES
+(1001,1,'2026-03-01'),
+(1002,2,'2026-03-02');
+
+
+INSERT INTO Order_Items VALUES
+(101,1001,1),
+(102,1002,3); 
+
+ 
+
+SELECT * FROM Customer;
+SELECT * FROM Products;
+SELECT * FROM Orders;
+SELECT * FROM Order_Items;
+
+
+
+select Customer.Name,Products.Product_name,Order_Items.Quantity
+from Customer
+join Orders on Customer.Customer_id = Orders.Customer_id
+join Order_Items on Orders.Order_id = Order_Items.Order_id
+join Products on Order_Items.Product_id = Products.Product_id
+
+
+SELECT 
+    c.Name,
+    SUM(p.Price * oi.Quantity) AS Total_Spent
+FROM Customer c
+JOIN Orders o ON c.Customer_id = o.Customer_id
+JOIN Order_Items oi ON o.Order_id = oi.Order_id
+JOIN Products p ON oi.Product_id = p.Product_id
+GROUP BY c.Name;
+
+
+select *
+from Customer c
+join Orders o on o.Customer_id = c.Customer_id
+where c.city = 'Toronto';
+    
+
+UPDATE Order_Items
+set Quantity = 5
+where Order_id = 1002 and product_id = 102;
+
+SELECT*
+from Order_Items
+
+
+delete from Order_Items
+where Order_id = 1002 and product_id = 102;
+
+SELECT*
+from Order_Items;
+
+
+create index idx_orders
+on orders (customer_id);
+
+select c.name,
+	SUM(p.Price * oi.Quantity) AS Total_Spent
+from Customer c
+join orders o on c.Customer_id = o.Customer_id
+join Order_Items oi on o.Order_id = oi.Order_id
+join Products p on oi.Product_id = p.Product_id
+group by c.Name
+order by Total_Spent DESC
+limit 1;
+
+
